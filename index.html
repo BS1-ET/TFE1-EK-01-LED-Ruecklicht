@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TFE 1 · EK · LED-Rücklicht funktioniert nicht</title>
+<style>
+:root{--rot:#C62828;--dunkel:#222;--grau:#666;--hell:#f5f5f5;--gruen:#2e7d32;--blau:#1565c0;}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--dunkel);background:#fafafa;line-height:1.45}
+header{display:flex;align-items:center;gap:18px;padding:14px 22px;background:#fff;border-bottom:3px solid var(--rot)}
+header img{height:58px}
+header .t small{color:var(--rot);font-weight:bold;font-size:.8rem;display:block}
+header h1{margin:2px 0 0;font-size:1.35rem}
+main{max-width:1050px;margin:0 auto;padding:18px}
+.intro{background:#fff;border-left:5px solid var(--rot);padding:12px 16px;margin-bottom:18px}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:800px){.board{grid-template-columns:1fr}}
+.st{background:#fff;border:2px solid #ddd;border-radius:14px;padding:14px;position:relative;min-height:170px}
+.st h2{margin:0 0 6px;font-size:1.05rem}
+.st .nr{position:absolute;top:-12px;left:14px;background:var(--rot);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:bold}
+.st.locked{opacity:.5;filter:grayscale(1)}
+.st.locked a,.st.locked button{pointer-events:none}
+.st.locked::after{content:"🔒 gesperrt – erst den Test davor bestehen";position:absolute;bottom:10px;left:14px;font-size:.8rem;color:var(--grau)}
+.st.done{border-color:var(--gruen)}
+.st ul{margin:6px 0 0;padding-left:18px}
+.st a{color:var(--blau)}
+.badge{display:inline-block;font-size:.75rem;padding:2px 8px;border-radius:10px;background:var(--hell);margin-top:6px}
+.badge.ok{background:#e8f5e9;color:var(--gruen);font-weight:bold}
+.puzzle{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+.puzzle a{display:block;text-align:center;padding:8px 4px;border-radius:8px;text-decoration:none;color:#fff;font-weight:bold;font-size:.85rem}
+.p1{background:#c62828}.p2{background:#1565c0}.p3{background:#2e7d32}.p4{background:#ef6c00}
+button{background:var(--rot);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:.95rem;cursor:pointer}
+button.sek{background:#555}
+#quiz{display:none;background:#fff;border:2px solid var(--rot);border-radius:14px;padding:18px;margin-top:18px}
+.frage{border-bottom:1px solid #eee;padding:10px 0}
+.frage label{display:block;margin:3px 0;cursor:pointer}
+.fb{margin-top:6px;font-size:.9rem;padding:6px 10px;border-radius:6px;display:none}
+.fb.r{background:#e8f5e9;display:block}.fb.f{background:#ffebee;display:block}
+.koord{font-size:.75rem;color:var(--grau)}
+table.ausw{border-collapse:collapse;margin-top:10px}
+table.ausw td,table.ausw th{border:1px solid #ccc;padding:4px 10px;font-size:.9rem}
+input[type=number]{width:110px;padding:4px}
+footer{max-width:1050px;margin:20px auto;padding:8px 18px;border-top:1px solid #ccc;color:var(--grau);font-size:.75rem;display:flex;justify-content:space-between}
+</style>
+</head>
+<body>
+<header>
+  <img src="logo_technikerschule.jpg" alt="Logo Technikerschule Bayreuth – Fahrzeugtechnik und Elektromobilität">
+  <div class="t"><small>EK · LG 1/2 · TFE 1</small><h1>LED-Rücklicht funktioniert nicht – Puzzle-Board</h1></div>
+</header>
+<main>
+<div class="intro"><b>Ihr Auftrag:</b> Die Anhängerbau Weber GmbH reklamiert fünf Rückleuchten LR-12. Sie erstellen als Technikerin bzw. Techniker der Qualitätssicherung ein Handout „Halbleiter kompakt“ für die Kundenschulung und einen Reklamationsbericht. Arbeiten Sie die Stationen der Reihe nach ab. Station 5 und 6 werden freigeschaltet, sobald Sie den Test davor mit mindestens 80 % bestanden haben. Ihr Fortschritt wird nur in diesem Browser gespeichert.</div>
+
+<div class="board">
+  <div class="st" id="s1"><div class="nr">1</div><h2>Start: Reklamation</h2>
+    <ul><li><a href="pdf/TFE1_EK_010-Leitsituation-LED-Ruecklicht-28.pdf">Leitsituation (Mail, Datenblatt, Protokoll)</a></li>
+    <li><a href="pdf/TFE1_EK_012-Eingangscheck-28.pdf">Eingangscheck als PDF</a></li></ul>
+    <p><button onclick="starte('t012')">Eingangscheck online</button></p><span class="badge" id="b_t012">noch nicht bearbeitet</span></div>
+
+  <div class="st" id="s2"><div class="nr">2</div><h2>Expertenphase</h2>
+    Wählen Sie Ihr Puzzleteil (Einteilung durch die Lehrkraft):
+    <div class="puzzle"><a class="p1" href="pdf/TFE1_EK_020-Infoblaetter-Experten-E1-E4-28.pdf#page=1">E1 Leiter · Halbleiter · Isolator</a><a class="p2" href="pdf/TFE1_EK_020-Infoblaetter-Experten-E1-E4-28.pdf#page=1">E2 Dotierung</a><a class="p3" href="pdf/TFE1_EK_020-Infoblaetter-Experten-E1-E4-28.pdf#page=2">E3 Herstellung</a><a class="p4" href="pdf/TFE1_EK_020-Infoblaetter-Experten-E1-E4-28.pdf#page=2">E4 Werkstoffe im Fahrzeug</a></div>
+    <ul><li><a href="pdf/TFE1_EK_021-Gruppenpuzzle-Handout-28.pdf">Auftrag Gruppenpuzzle (Teil A)</a></li><li><a href="pdf/TFE1_EK_090-Hilfekarten-28.pdf">Hilfekarten H1–H4</a></li></ul></div>
+
+  <div class="st" id="s3"><div class="nr">3</div><h2>Stammgruppe: Handout</h2>
+    <ul><li>Experten erklären reihum (je 3–5 min)</li><li>Handout „Halbleiter kompakt“ nach Gliederung erstellen</li><li><a href="pdf/TFE1_EK_021-Gruppenpuzzle-Handout-28.pdf">Auftrag Teil B und C (Galerie)</a></li></ul></div>
+
+  <div class="st" id="s4"><div class="nr">4</div><h2>Test: Halbleiterwerkstoffe</h2>
+    <p>10 Fragen zu LG 1. Bestanden ab 80 %.</p>
+    <p><button onclick="starte('t026')">Test starten</button></p><span class="badge" id="b_t026">noch nicht bestanden</span></div>
+
+  <div class="st locked" id="s5"><div class="nr">5</div><h2>PN-Übergang und Diode</h2>
+    <ul><li><a href="pdf/TFE1_EK_030-Infoblatt-PN-Uebergang-Diode-28.pdf">Infoblatt PN-Übergang und Diode</a></li><li><a href="pdf/TFE1_EK_031-Diode-Datenblatt-28.pdf">Arbeitsblatt Diode und Datenblatt</a></li></ul>
+    <p><button onclick="starte('t036')">Test Diode starten</button></p><span class="badge" id="b_t036">noch nicht bestanden</span></div>
+
+  <div class="st locked" id="s6"><div class="nr">6</div><h2>Labor und Reklamationsbericht</h2>
+    <ul><li><a href="pdf/TFE1_EK_040-Infoblatt-Messen-an-Dioden-28.pdf">Infoblatt Messen an Dioden</a></li><li><a href="pdf/TFE1_EK_041-Diode-pruefen-Reklamation-28.pdf">Arbeitsblatt Labor und Reklamation</a></li><li><a href="pdf/TFE1_EK_090-Hilfekarten-28.pdf">Hilfekarten H5–H6</a></li><li><a href="pdf/TFE1_EK_091-Punktmatrix-28.pdf">Punktmatrix (Selbsteinschätzung)</a></li></ul>
+    <p>Abschluss: Fachgespräch mit der Lehrkraft.</p></div>
+</div>
+
+<div id="quiz"></div>
+</main>
+<footer><span>EK · LG 1/2 · LED-Rücklicht · Puzzle-Board · zu LS EK 1</span><span>TFE1_EK_index-28</span></footer>
+
+<script>
+const TESTS={
+ t012:{titel:"Eingangscheck (wird nicht benotet)",gate:false,fragen:[
+  {k:"IA1",t:"Welche Teilchen bewegen sich in einem Kupferdraht, wenn Strom fließt?",o:["Protonen","freie Elektronen","Neutronen","Löcher"],r:[1],e:"In Metallen leiten freie Elektronen (Leitungselektronen)."},
+  {k:"IA1",t:"Welcher Stoff ist ein Halbleiter?",o:["Kupfer","PVC","Silizium","Glas"],r:[2],e:"Silizium ist der wichtigste Halbleiter."},
+  {k:"IA1",t:"Wie viele Außenelektronen hat ein Siliziumatom?",o:["2","3","4","5"],r:[2],e:"Silizium ist vierwertig."},
+  {k:"IA3",t:"Ein Widerstand von 470 Ω liegt an 12 V. Strom in mA?",num:25.5,tol:0.5,e:"I = 12 V / 470 Ω = 25,5 mA."},
+  {k:"IA3",t:"100 Ω und 220 Ω in Reihe an 9 V. Spannung am 220-Ω-Widerstand in V?",num:6.19,tol:0.06,e:"I = 9 V / 320 Ω = 28,1 mA; U = 220 Ω · 28,1 mA = 6,19 V."},
+  {k:"IA2",t:"Was macht eine Diode?",o:["Sie verstärkt den Strom.","Sie lässt Strom nur in einer Richtung durch.","Sie speichert Ladung.","Sie begrenzt die Spannung immer auf 5 V."],r:[1],e:"Durchlass in einer Richtung, Sperren in der Gegenrichtung."},
+  {k:"IA1",t:"Woran erkennen Sie die Kathode einer bedrahteten LED? (mehrere richtig)",o:["kürzeres Bein","längeres Bein","abgeflachte Gehäuseseite","rote Farbe"],r:[0,2],multi:true,e:"Kathode: kürzeres Bein und abgeflachte Seite."},
+  {k:"IB1",t:"Wie wird ein Strommesser angeschlossen?",o:["parallel zum Verbraucher","in Reihe zum Verbraucher","zwischen Plus und Minus der Quelle"],r:[1],e:"Strommesser immer in Reihe – parallel entsteht ein Kurzschluss."}]},
+ t026:{titel:"Test Halbleiterwerkstoffe (ab 80 % bestanden)",gate:true,fragen:[
+  {k:"IA2",t:"Was unterscheidet einen Halbleiter von einem Isolator im Bändermodell?",o:["Beim Halbleiter überlappen die Bänder.","Der Halbleiter hat eine kleinere Bandlücke.","Der Halbleiter hat kein Valenzband.","Es gibt keinen Unterschied."],r:[1],e:"Halbleiter: Bandlücke etwa 0,5–3,5 eV, Isolator über ca. 5 eV."},
+  {k:"IA2",t:"Wie verhält sich der Widerstand von reinem Silizium bei Erwärmung?",o:["Er steigt stark.","Er bleibt gleich.","Er sinkt stark."],r:[2],e:"Mehr Elektron-Loch-Paare → Heißleiterverhalten."},
+  {k:"IA2",t:"Wie heißt der Vorgang, bei dem ein freies Elektron in ein Loch fällt?",o:["Dotierung","Rekombination","Diffusion","Implantation"],r:[1],e:"Rekombination – Elektron und Loch verschwinden paarweise."},
+  {k:"IA2",t:"Welche Fremdatome erzeugen einen n-Leiter? (mehrere richtig)",o:["Phosphor","Bor","Arsen","Aluminium"],r:[0,2],multi:true,e:"Fünfwertige Donatoren: Phosphor, Arsen, Antimon."},
+  {k:"IA2",t:"Welche Ladungsträger sind im p-Leiter Majoritätsträger?",o:["freie Elektronen","Löcher","Protonen"],r:[1],e:"Im p-Leiter überwiegen die Löcher."},
+  {k:"IA2",t:"Ein n-dotierter Kristall ist nach außen …",o:["negativ geladen","positiv geladen","elektrisch neutral"],r:[2],e:"Jedes Fremdatom bringt gleich viele Protonen wie Elektronen mit."},
+  {k:"IA1",t:"Mit welchem Verfahren werden Silizium-Einkristalle aus der Schmelze gezogen?",o:["Siemens-Verfahren","Czochralski-Verfahren","Ionenimplantation","Fotolithografie"],r:[1],e:"Czochralski: Impfkristall wird drehend aus der Schmelze gezogen."},
+  {k:"IA3",t:"Welche Bandlücke in eV gehört zu rotem Licht mit 620 nm? (λ ≈ 1240 nm·eV / E_g)",num:2.0,tol:0.05,e:"E_g = 1240 / 620 = 2,0 eV."},
+  {k:"IA1",t:"Welcher Werkstoff steckt in Leistungshalbleitern moderner 800-V-Wechselrichter?",o:["Germanium","Siliziumkarbid (SiC)","Galliumarsenid","Kupfer"],r:[1],e:"SiC: etwa zehnfache Durchbruchfeldstärke, geringere Verluste."},
+  {k:"IA1",t:"Welche Zuordnung ist richtig?",o:["weiße LED – InGaN/GaN","rote LED – Siliziumkarbid","Generatordiode – Germanium"],r:[0],e:"Weiße LEDs: blaue InGaN-LED mit Leuchtstoff."}]},
+ t036:{titel:"Test PN-Übergang und Diode (ab 80 % bestanden)",gate:true,fragen:[
+  {k:"IA2",t:"Was enthält die Raumladungszone?",o:["viele freie Elektronen","ortsfeste Ionen, keine freien Ladungsträger","nur Löcher"],r:[1],e:"Die RLZ wirkt wie ein Isolator."},
+  {k:"IA2",t:"Durchlassrichtung bedeutet:",o:["Plus an der Kathode","Plus an der Anode","Wechselspannung anlegen"],r:[1],e:"Plus an p (Anode), Minus an n (Kathode)."},
+  {k:"IA2",t:"Ab welcher Spannung leitet eine Siliziumdiode nennenswert?",o:["ca. 0,2 V","ca. 0,7 V","ca. 2 V","ca. 5 V"],r:[1],e:"Schleusenspannung Si: 0,6–0,7 V."},
+  {k:"IA2",t:"Warum bleibt die Leuchte LR-12 verpolt dunkel?",o:["D1 ist defekt.","D1 sperrt in dieser Polung.","Die LEDs leiten in beiden Richtungen."],r:[1],e:"Verpolschutzdiode sperrt bestimmungsgemäß."},
+  {k:"IA3",t:"Datenblattwert für die maximale periodische Sperrspannung:",o:["I_F(AV)","U_RRM","I_FSM","U_F"],r:[1],e:"U_RRM – bei der 1N4007 1000 V."},
+  {k:"IA3",t:"Rote LED: U_F = 2,0 V, I_F = 15 mA, U = 12 V. Vorwiderstand in Ω?",num:667,tol:5,e:"R_V = (12 V − 2,0 V) / 15 mA = 667 Ω (gewählt: 680 Ω)."},
+  {k:"IA3",t:"Si-Diode (U_F = 0,7 V) mit 2,2 kΩ an 9 V. Strom in mA?",num:3.77,tol:0.05,e:"I = (9 V − 0,7 V) / 2,2 kΩ = 3,77 mA."},
+  {k:"IB2",t:"Diodentest zeigt in beiden Richtungen OL. Befund?",o:["Diode in Ordnung","Diode unterbrochen","Diode kurzgeschlossen"],r:[1],e:"OL/OL = offen (unterbrochen)."}]}
+};
+function lies(k){try{return JSON.parse(localStorage.getItem('tfe1ek1_'+k))}catch(e){return null}}
+function schreib(k,v){try{localStorage.setItem('tfe1ek1_'+k,JSON.stringify(v))}catch(e){}}
+function stand(){
+  for(const id of ['t012','t026','t036']){const r=lies(id);const b=document.getElementById('b_'+id);
+    if(r){b.textContent=(TESTS[id].gate?(r.p>=80?'bestanden':'nicht bestanden')+' – ':'bearbeitet – ')+r.p+' %';if(!TESTS[id].gate||r.p>=80)b.classList.add('ok');}}
+  const r26=lies('t026'),r36=lies('t036');
+  if(r26&&r26.p>=80){document.getElementById('s5').classList.remove('locked');document.getElementById('s4').classList.add('done');}
+  if(r36&&r36.p>=80){document.getElementById('s6').classList.remove('locked');document.getElementById('s5').classList.add('done');}
+}
+function starte(id){
+  if(id==='t036'&&document.getElementById('s5').classList.contains('locked'))return alertBox('Station 5 ist noch gesperrt.');
+  const T=TESTS[id],q=document.getElementById('quiz');let h='<h2>'+T.titel+'</h2>';
+  T.fragen.forEach((f,i)=>{h+='<div class="frage"><b>'+(i+1)+'. '+f.t+'</b> <span class="koord">('+f.k+')</span><br>';
+    if(f.num!==undefined)h+='<input type="number" step="any" id="f'+i+'">';
+    else f.o.forEach((o,j)=>h+='<label><input type="'+(f.multi?'checkbox':'radio')+'" name="f'+i+'" value="'+j+'"> '+o+'</label>');
+    h+='<div class="fb" id="fb'+i+'"></div></div>';});
+  h+='<p><button onclick="werte(\''+id+'\')">Auswerten</button> <button class="sek" onclick="document.getElementById(\'quiz\').style.display=\'none\'">Schließen</button></p><div id="erg"></div>';
+  q.innerHTML=h;q.style.display='block';q.scrollIntoView({behavior:'smooth'});
+}
+function alertBox(t){const q=document.getElementById('quiz');q.innerHTML='<p>'+t+'</p>';q.style.display='block';}
+function werte(id){
+  const T=TESTS[id];let ok=0;const k={};
+  T.fragen.forEach((f,i)=>{let r;
+    if(f.num!==undefined){const v=parseFloat((document.getElementById('f'+i).value||'').replace(',','.'));r=!isNaN(v)&&Math.abs(v-f.num)<=f.tol;}
+    else{const sel=[...document.querySelectorAll('input[name=f'+i+']:checked')].map(x=>+x.value).sort().join();r=sel===f.r.slice().sort().join();}
+    if(r)ok++;k[f.k]=k[f.k]||[0,0];k[f.k][1]++;if(r)k[f.k][0]++;
+    const fb=document.getElementById('fb'+i);fb.className='fb '+(r?'r':'f');fb.textContent=(r?'Richtig. ':'Nicht richtig. ')+f.e;});
+  const p=Math.round(ok/T.fragen.length*100);schreib(id,{p:p,t:Date.now()});
+  let h='<p><b>Ergebnis: '+ok+' von '+T.fragen.length+' ('+p+' %)'+(T.gate?(p>=80?' – bestanden, nächste Station ist frei.':' – noch nicht bestanden. Fehler nacharbeiten und erneut versuchen.'):'')+'</b></p>';
+  h+='<table class="ausw"><tr><th>Koordinate</th><th>richtig</th></tr>';for(const x in k)h+='<tr><td>'+x+'</td><td>'+k[x][0]+' / '+k[x][1]+'</td></tr>';h+='</table>';
+  document.getElementById('erg').innerHTML=h;stand();
+}
+stand();
+</script>
+</body>
+</html>

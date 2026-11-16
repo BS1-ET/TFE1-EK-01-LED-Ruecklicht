@@ -40,7 +40,7 @@ button.sek{background:#555}
 .koord{font-size:.75rem;color:var(--grau)}
 table.ausw{border-collapse:collapse;margin-top:10px}
 table.ausw td,table.ausw th{border:1px solid #ccc;padding:4px 10px;font-size:.9rem}
-input[type=number]{width:110px;padding:4px}
+input[type=text]{width:130px;padding:4px}
 footer{max-width:1050px;margin:20px auto;padding:8px 18px;border-top:1px solid #ccc;color:var(--grau);font-size:.75rem;display:flex;justify-content:space-between}
 </style>
 </head>
@@ -128,7 +128,7 @@ function starte(id){
   if(id==='t036'&&document.getElementById('s5').classList.contains('locked'))return alertBox('Station 5 ist noch gesperrt.');
   const T=TESTS[id],q=document.getElementById('quiz');let h='<h2>'+T.titel+'</h2>';
   T.fragen.forEach((f,i)=>{h+='<div class="frage"><b>'+(i+1)+'. '+f.t+'</b> <span class="koord">('+f.k+')</span><br>';
-    if(f.num!==undefined)h+='<input type="number" step="any" id="f'+i+'">';
+    if(f.num!==undefined)h+='<input type="text" inputmode="decimal" autocomplete="off" placeholder="z. B. 12,5" id="f'+i+'">';
     else f.o.forEach((o,j)=>h+='<label><input type="'+(f.multi?'checkbox':'radio')+'" name="f'+i+'" value="'+j+'"> '+o+'</label>');
     h+='<div class="fb" id="fb'+i+'"></div></div>';});
   h+='<p><button onclick="werte(\''+id+'\')">Auswerten</button> <button class="sek" onclick="document.getElementById(\'quiz\').style.display=\'none\'">Schließen</button></p><div id="erg"></div>';

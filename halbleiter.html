@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TFE 1 · EK · Halbleiter-Animation</title>
+<style>
+:root{--rot:#C62828;--dunkel:#263238;--blech:#eceff1;--e:#1565C0;--l:#d32f2f}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#cfd8dc;color:#222}
+header{display:flex;align-items:center;gap:18px;padding:10px 22px;background:#fff;border-bottom:3px solid var(--rot)}
+header img{height:54px}
+header small{color:var(--rot);font-weight:bold;font-size:.8rem;display:block}
+header h1{margin:2px 0 0;font-size:1.25rem}
+.band{background:var(--dunkel);padding:8px 22px;display:flex;gap:6px;flex-wrap:wrap}
+.band button{background:#37474f;color:#fff;border:0;border-radius:4px;padding:9px 14px;cursor:pointer;font-size:.95rem}
+.band button.akt{background:var(--rot)}
+.wrap{max-width:1100px;margin:16px auto;background:#fff;padding:16px 20px;box-shadow:0 4px 18px rgba(0,0,0,.18)}
+.grid{display:grid;grid-template-columns:1fr 290px;gap:16px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+canvas{width:100%;background:#fafafa;border:1px solid #cfd8dc;border-radius:6px;display:block}
+.panel{background:var(--blech);border-radius:8px;padding:12px 14px;font-size:.92rem}
+.panel h3{margin:4px 0 8px;font-size:1rem}
+.panel label{display:block;margin:10px 0 3px;font-weight:bold;font-size:.88rem}
+.panel input[type=range]{width:100%}
+.wert{font-family:'Courier New',monospace;font-weight:bold}
+.knopf{display:inline-block;margin:3px 4px 3px 0;padding:6px 10px;border:1px solid #90a4ae;border-radius:5px;background:#fff;cursor:pointer;font-size:.88rem}
+.knopf.an{background:var(--dunkel);color:#fff;border-color:var(--dunkel)}
+.leg{display:flex;align-items:center;gap:6px;margin:4px 0;font-size:.85rem}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.auftrag{margin-top:12px;border-left:4px solid var(--rot);background:#fff;padding:8px 12px;font-size:.9rem}
+.auftrag ol{margin:4px 0 0 18px;padding:0}
+footer{max-width:1100px;margin:0 auto 20px;color:#555;font-size:.75rem;display:flex;justify-content:space-between;padding:0 4px}
+</style>
+</head>
+<body>
+<header>
+<img src="logo_technikerschule.jpg" alt="Technikerschule Bayreuth – Fahrzeugtechnik und Elektromobilität">
+<div><small>TFE 1 · Elektronik · LS EK 1 · Halbleiterwerkstoffe und PN-Übergang</small><h1>Halbleiter-Animation</h1></div>
+</header>
+<nav class="band" id="nav">
+<button data-t="0" class="akt">1 · Kristall und Eigenleitung</button>
+<button data-t="1">2 · Dotierung</button>
+<button data-t="2">3 · PN-Übergang und Kennlinie</button>
+</nav>
+<main class="wrap">
+<div class="grid">
+<div><canvas id="cv" width="760" height="520"></canvas></div>
+<div class="panel" id="panel"></div>
+</div>
+</main>
+<footer><span>Staatliche Technikerschule Bayreuth · eigene Animation (Modell, nicht maßstäblich)</span><span>Inhalte nach der früheren „Halbleiter-Animation“</span></footer>
+<script>
+const cv=document.getElementById('cv'),cx=cv.getContext('2d');
+const W=760,H=520;
+const C={e:'#1565C0',l:'#d32f2f',si:'#78909c',p:'#2e7d32',b:'#ef6c00',bond:'#b0bec5'};
+let tab=0, st={T:20,U:false,dot:'keine',Ud:0};
+let atoms=[],free=[],holes=[],t=0;
+// ---------- Gitter ----------
+const NX=9,NY=6,DX=78,DY=78,X0=70,Y0=60;
+function gitter(dot){atoms=[];for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){let typ='Si';
+  if(dot!=='keine'&&((i+2*j)%5===2)&&i>0&&i<NX-1)typ=dot==='n'?'P':'B';
+  atoms.push({i,j,x:X0+i*DX,y:Y0+j*DY,typ})}}
+function bonds(){const r=[];for(const a of atoms){if(a.i<NX-1)r.push([a,atoms[a.j*NX+a.i+1]]);if(a.j<NY-1)r.push([a,atoms[(a.j+1)*NX+a.i]])}return r}
+let BONDS=[];
+function reset(){free=[];holes=[];gitter(tab===1?st.dot:'keine');BONDS=bonds();
+ if(tab===1){for(const a of atoms){if(a.typ==='P')free.push(neu(a.x+20,a.y-20,'dot'));if(a.typ==='B')holes.push(lochAn(a));}}}
+function neu(x,y,src){const w=Math.random()*6.28;return {x,y,vx:Math.cos(w)*1.2,vy:Math.sin(w)*1.2,src}}
+function lochAn(a){const bs=BONDS.filter(b=>b[0]===a||b[1]===a);const b=bs[Math.floor(Math.random()*bs.length)];return {b,src:'dot'}}
+function bpos(b){return {x:(b[0].x+b[1].x)/2,y:(b[0].y+b[1].y)/2}}
+// Erzeugungsrate abhängig von der Temperatur (Modell: verdoppelt sich etwa alle 20 K)
+function rate(){return 0.004*Math.pow(2,(st.T-20)/20)}
+function schrittKristall(){
+ if(Math.random()<rate()*BONDS.length/10){const b=BONDS[Math.floor(Math.random()*BONDS.length)];
+  if(!holes.some(h=>h.b===b)){const p=bpos(b);free.push(neu(p.x,p.y,'paar'));holes.push({b,src:'paar'})}}
+ const drift=st.U?0.9:0;
+ for(const e of free){e.vx+= (Math.random()-.5)*.6+drift*0.12; e.vy+=(Math.random()-.5)*.6; const v=Math.hypot(e.vx,e.vy),vm=st.U?2.6:1.8; if(v>vm){e.vx*=vm/v;e.vy*=vm/v}
+  e.x+=e.vx;e.y+=e.vy; if(e.y<Y0-25||e.y>Y0+(NY-1)*DY+25){e.vy*=-1;e.y=Math.max(Y0-25,Math.min(Y0+(NY-1)*DY+25,e.y))}
+  if(e.x>X0+(NX-1)*DX+30){ if(st.U){e.x=X0-30;} else {e.vx*=-1;} } if(e.x<X0-30){ if(st.U)e.x=X0-30; else e.vx*=-1;}}
+ // Löcher springen (Valenzelektron aus Nachbarbindung füllt das Loch)
+ for(const h of holes){ if(Math.random()<(st.U?0.06:0.02)){const n=BONDS.filter(b=>b!==h.b&&(b[0]===h.b[0]||b[0]===h.b[1]||b[1]===h.b[0]||b[1]===h.b[1]));
+   let c=n; if(st.U){const p=bpos(h.b);c=n.filter(b=>bpos(b).x<p.x-1); if(!c.length){c=BONDS.filter(b=>bpos(b).x>X0+(NX-2)*DX&&!holes.some(o=>o.b===b));}}
+   if(c.length){const nb=c[Math.floor(Math.random()*c.length)]; if(!holes.some(o=>o.b===nb))h.b=nb}}}
+ // Rekombination (nur thermisch erzeugte Paare)
+ for(let k=free.length-1;k>=0;k--){const e=free[k];if(e.src!=='paar')continue;
+  for(let m=holes.length-1;m>=0;m--){const h=holes[m];if(h.src!=='paar')continue;const p=bpos(h.b);
+   if(Math.hypot(p.x-e.x,p.y-e.y)<10&&Math.random()<0.5){free.splice(k,1);holes.splice(m,1);break}}}
+ const max=tab===1?60:90; while(free.filter(f=>f.src==='paar').length>max){free.splice(free.findIndex(f=>f.src==='paar'),1)}
+ while(holes.filter(f=>f.src==='paar').length>max){holes.splice(holes.findIndex(f=>f.src==='paar'),1)}
+}
+function zeichneKristall(){
+ cx.lineWidth=3;for(const b of BONDS){cx.strokeStyle=C.bond;cx.beginPath();cx.moveTo(b[0].x,b[0].y);cx.lineTo(b[1].x,b[1].y);cx.stroke();
+  const p=bpos(b),dx=b[1].x-b[0].x,dy=b[1].y-b[0].y,n=Math.hypot(dx,dy),ox=-dy/n*5,oy=dx/n*5;
+  if(!holes.some(h=>h.b===b)){cx.fillStyle='#455a64';for(const s of [-1,1]){cx.beginPath();cx.arc(p.x+ox*s,p.y+oy*s,3,0,7);cx.fill()}}
+  else{cx.fillStyle='#455a64';cx.beginPath();cx.arc(p.x-ox,p.y-oy,3,0,7);cx.fill()}}
+ for(const a of atoms){cx.fillStyle=a.typ==='Si'?C.si:(a.typ==='P'?C.p:C.b);cx.beginPath();cx.arc(a.x,a.y,17,0,7);cx.fill();
+  cx.fillStyle='#fff';cx.font='bold 13px Arial';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(a.typ,a.x,a.y-1);
+  if(a.typ!=='Si'){cx.fillStyle='#000';cx.font='bold 14px Arial';cx.fillText(a.typ==='P'?'⊕':'⊖',a.x+19,a.y-19)}}
+ for(const h of holes){const p=bpos(h.b);cx.strokeStyle=C.l;cx.lineWidth=2.5;cx.fillStyle='#fff';cx.beginPath();cx.arc(p.x,p.y,7,0,7);cx.fill();cx.stroke();
+  cx.fillStyle=C.l;cx.font='bold 11px Arial';cx.fillText('+',p.x,p.y)}
+ for(const e of free){cx.fillStyle=C.e;cx.beginPath();cx.arc(e.x,e.y,6,0,7);cx.fill();cx.fillStyle='#fff';cx.font='bold 10px Arial';cx.fillText('−',e.x,e.y)}
+ // Spannungsquelle
+ cx.fillStyle='#263238';cx.font='13px Arial';cx.textAlign='left';
+ if(st.U){cx.fillText('−  Minuspol',10,H-14);cx.textAlign='right';cx.fillText('Pluspol  +',W-10,H-14);cx.textAlign='center';cx.fillText('Elektronen → zum Pluspol     ← Löcher zum Minuspol',W/2,H-14)}
+ else{cx.textAlign='center';cx.fillText('keine Spannung angelegt – Ladungsträger bewegen sich ungeordnet',W/2,H-14)}
+}
+// ---------- PN-Übergang ----------
+let pe=[],ph=[];
+const PX0=40,PX1=720,PM=380,PY0=40,PY1=300;
+function wZone(U){return U>=0.6?6:60*Math.sqrt((0.75-U)/0.75)}
+function pnReset(){pe=[];ph=[];for(let k=0;k<40;k++){pe.push({x:PM+80+Math.random()*(PX1-PM-90),y:PY0+10+Math.random()*(PY1-PY0-20)});ph.push({x:PX0+10+Math.random()*(PM-PX0-90),y:PY0+10+Math.random()*(PY1-PY0-20)})}}
+function strom(U){const I=1e-9*(Math.exp(U/0.045)-1);return I}
+function schrittPN(){const U=st.Ud,w=wZone(U),fw=U>0.62;
+ const sp=fw?Math.min(4,0.5+ (U-0.62)*25):0;
+ for(const e of pe){e.y+=(Math.random()-.5)*2;e.y=Math.max(PY0+6,Math.min(PY1-6,e.y));
+  if(fw){e.x-=sp*(0.6+Math.random()*.8);}else{e.x+=(Math.random()-.5)*2; if(e.x<PM+w+6)e.x+=2.5;}
+  if(e.x>PX1-6)e.x=PX1-6;
+  if(fw&&e.x<PM-40-Math.random()*60){e.x=PX1-5;e.y=PY0+10+Math.random()*(PY1-PY0-20)}}
+ for(const h of ph){h.y+=(Math.random()-.5)*2;h.y=Math.max(PY0+6,Math.min(PY1-6,h.y));
+  if(fw){h.x+=sp*(0.6+Math.random()*.8);}else{h.x+=(Math.random()-.5)*2; if(h.x>PM-w-6)h.x-=2.5;}
+  if(h.x<PX0+6)h.x=PX0+6;
+  if(fw&&h.x>PM+40+Math.random()*60){h.x=PX0+5;h.y=PY0+10+Math.random()*(PY1-PY0-20)}}}
+function zeichnePN(){const U=st.Ud,w=wZone(U);
+ cx.fillStyle='#fde9e9';cx.fillRect(PX0,PY0,PM-PX0,PY1-PY0);cx.fillStyle='#e3eefb';cx.fillRect(PM,PY0,PX1-PM,PY1-PY0);
+ cx.fillStyle='rgba(255,236,179,.9)';cx.fillRect(PM-w,PY0,2*w,PY1-PY0);
+ cx.strokeStyle='#37474f';cx.lineWidth=2;cx.strokeRect(PX0,PY0,PX1-PX0,PY1-PY0);
+ // ortsfeste Ionen
+ cx.font='bold 13px Arial';cx.textAlign='center';cx.textBaseline='middle';
+ for(let y=PY0+20;y<PY1;y+=36){for(let x=PX0+22;x<PX1;x+=36){if(x<PM){cx.fillStyle=(x>PM-w)?'#b71c1c':'#c79a9a';cx.fillText('⊖',x,y)}else{cx.fillStyle=(x<PM+w)?'#0d47a1':'#9fb4cc';cx.fillText('⊕',x,y)}}}
+ for(const h of ph){if(h.x>PM-w&&h.x<PM+w&&U<0.62)continue;cx.strokeStyle=C.l;cx.lineWidth=2.5;cx.fillStyle='#fff';cx.beginPath();cx.arc(h.x,h.y,6,0,7);cx.fill();cx.stroke()}
+ for(const e of pe){if(e.x>PM-w&&e.x<PM+w&&U<0.62)continue;cx.fillStyle=C.e;cx.beginPath();cx.arc(e.x,e.y,5.5,0,7);cx.fill()}
+ cx.fillStyle='#263238';cx.font='bold 15px Arial';cx.fillText('p-Gebiet (Anode)',(PX0+PM)/2-30,PY0-16);cx.fillText('n-Gebiet (Kathode)',(PM+PX1)/2+30,PY0-16);
+ cx.font='12px Arial';if(w>12){cx.fillText('Raumladungszone',PM,PY1+14);cx.fillText('ohne freie Ladungsträger',PM,PY1+28)}
+ // Quelle und Kennlinie
+ const gx=440,gy=330,gw=300,gh=170;cx.fillStyle='#fff';cx.fillRect(gx,gy,gw,gh);cx.strokeStyle='#90a4ae';cx.lineWidth=1;cx.strokeRect(gx,gy,gw,gh);
+ const ux=u=>gx+gw*0.55+u*gw*0.45/0.9, iy=i=>gy+gh*0.8-i*gh*0.75/20e-3;
+ cx.strokeStyle='#263238';cx.beginPath();cx.moveTo(gx,iy(0));cx.lineTo(gx+gw,iy(0));cx.moveTo(ux(0),gy);cx.lineTo(ux(0),gy+gh);cx.stroke();
+ cx.strokeStyle='#1565C0';cx.lineWidth=2;cx.beginPath();for(let u=-1.2;u<=0.9;u+=0.005){const i=Math.min(strom(u),21e-3);const X=ux(u),Y=iy(i);if(u<=-1.2)cx.moveTo(X,Y);else cx.lineTo(X,Y)}cx.stroke();
+ const I=Math.min(strom(U),20e-3);cx.fillStyle=C.l;cx.beginPath();cx.arc(ux(U),iy(I),6,0,7);cx.fill();
+ cx.fillStyle='#263238';cx.font='11px Arial';cx.textAlign='right';cx.fillText('U',gx+gw-4,iy(0)+12);cx.textAlign='left';cx.fillText('I',ux(0)+5,gy+10);
+ cx.fillText('Si-Diode (Modell)',gx+6,gy+12);
+ // Anzeige
+ const Ianz=strom(U);let txt=Ianz>=1e-3?(Ianz*1e3).toFixed(1)+' mA':(Ianz>=1e-6?(Ianz*1e6).toFixed(1)+' µA':(Math.abs(Ianz)*1e9).toFixed(1)+' nA');
+ cx.font='bold 14px Arial';cx.textAlign='left';cx.fillStyle='#263238';
+ cx.fillText('U = '+U.toFixed(2).replace('.',',')+' V',40,350);cx.fillText('I = '+(U<0?'−':'')+txt.replace('.',','),40,374);
+ cx.font='13px Arial';cx.fillText(U===0?'keine Spannung: Zone im Gleichgewicht, kein Strom':U<0?'Sperrrichtung: Zone wird breiter, nur Sperrstrom':(U<0.6?'Durchlassrichtung, aber unter der Schleusenspannung':'Durchlassrichtung: Zone abgebaut, Strom fließt'),40,400);
+ // Polung (IEC: Spannungsquelle = Kreis mit Linie)
+ cx.font='12px Arial';cx.fillText(U>0?'Pluspol an p (Anode), Minuspol an n (Kathode)':(U<0?'Pluspol an n (Kathode), Minuspol an p (Anode)':''),40,424);
+}
+// ---------- Steuerung ----------
+function panel(){const p=document.getElementById('panel');
+ if(tab===0)p.innerHTML=`<h3>Reines Silizium (Eigenleitung)</h3>
+ <label>Temperatur: <span class="wert" id="tw">${st.T} °C</span></label><input type="range" min="-40" max="160" step="5" value="${st.T}" oninput="st.T=+this.value;document.getElementById('tw').textContent=this.value+' °C'">
+ <label>Spannung</label><span class="knopf ${st.U?'an':''}" onclick="st.U=!st.U;panel()">${st.U?'Spannung an':'Spannung aus'}</span>
+ <div style="margin-top:10px"><div class="leg"><span class="dot" style="background:${C.si}"></span>Si-Atom (4 Valenzelektronen)</div><div class="leg"><span class="dot" style="background:${C.e}"></span>freies Elektron</div><div class="leg"><span class="dot" style="border:2px solid ${C.l}"></span>Loch (fehlendes Valenzelektron)</div></div>
+ <p>Freie Elektronen: <span class="wert" id="nz">0</span></p>
+ <div class="auftrag"><b>Beobachten Sie:</b><ol><li>Wie ändert sich die Zahl der freien Ladungsträger, wenn die Temperatur steigt?</li><li>Was passiert mit Elektron und Loch, wenn sie sich treffen?</li><li>In welche Richtungen wandern Elektronen und Löcher bei angelegter Spannung?</li><li>Begründen Sie: Verhält sich reines Silizium wie ein Kalt- oder wie ein Heißleiter?</li></ol></div>`;
+ if(tab===1)p.innerHTML=`<h3>Dotierung</h3>
+ <label>Fremdatome</label><span class="knopf ${st.dot==='keine'?'an':''}" onclick="st.dot='keine';reset();panel()">keine</span><span class="knopf ${st.dot==='n'?'an':''}" onclick="st.dot='n';reset();panel()">n: Phosphor (5)</span><span class="knopf ${st.dot==='p'?'an':''}" onclick="st.dot='p';reset();panel()">p: Bor (3)</span>
+ <label>Temperatur: <span class="wert" id="tw">${st.T} °C</span></label><input type="range" min="-40" max="160" step="5" value="${st.T}" oninput="st.T=+this.value;document.getElementById('tw').textContent=this.value+' °C'">
+ <label>Spannung</label><span class="knopf ${st.U?'an':''}" onclick="st.U=!st.U;panel()">${st.U?'Spannung an':'Spannung aus'}</span>
+ <div style="margin-top:10px"><div class="leg"><span class="dot" style="background:${C.p}"></span>P: Donator, gibt ein Elektron ab (⊕ ortsfest)</div><div class="leg"><span class="dot" style="background:${C.b}"></span>B: Akzeptor, nimmt ein Elektron auf (⊖ ortsfest)</div></div>
+ <p>Elektronen: <span class="wert" id="nz">0</span> · Löcher: <span class="wert" id="lz">0</span></p>
+ <div class="auftrag"><b>Beobachten Sie:</b><ol><li>Welche Ladungsträger sind im n-Leiter in der Mehrheit, welche im p-Leiter?</li><li>Warum ist der dotierte Kristall trotzdem elektrisch neutral?</li><li>Stellen Sie die Temperatur auf −40 °C: Warum leitet der dotierte Kristall noch, der reine kaum?</li></ol></div>`;
+ if(tab===2)p.innerHTML=`<h3>PN-Übergang (Diode)</h3>
+ <label>Spannung U<sub>AK</sub>: <span class="wert" id="uw">${st.Ud.toFixed(2).replace('.',',')} V</span></label><input type="range" min="-5" max="0.85" step="0.01" value="${st.Ud}" oninput="st.Ud=+this.value;document.getElementById('uw').textContent=(+this.value).toFixed(2).replace('.',',')+' V'">
+ <span class="knopf" onclick="st.Ud=-3;panel()">Sperrrichtung −3 V</span><span class="knopf" onclick="st.Ud=0;panel()">0 V</span><span class="knopf" onclick="st.Ud=0.75;panel()">Durchlass 0,75 V</span>
+ <div style="margin-top:10px"><div class="leg"><span class="dot" style="background:${C.e}"></span>freies Elektron (n-Gebiet)</div><div class="leg"><span class="dot" style="border:2px solid ${C.l}"></span>Loch (p-Gebiet)</div><div class="leg">⊕ ⊖ ortsfeste Ionen</div><div class="leg"><span class="dot" style="background:#ffecb3;border:1px solid #ccc"></span>Raumladungszone</div></div>
+ <div class="auftrag"><b>Beobachten Sie:</b><ol><li>Was enthält die Raumladungszone bei 0 V – und was nicht?</li><li>Wie verändert sich die Zone in Sperrrichtung, wie in Durchlassrichtung?</li><li>Ab welcher Spannung steigt der Strom deutlich an? Vergleichen Sie mit Ihrer Messung im Labor.</li><li>Erklären Sie mit der Animation, warum eine verpolt angeschlossene LED-Leuchte dunkel bleibt.</li></ol></div>`;
+}
+function zaehler(){const n=document.getElementById('nz'),l=document.getElementById('lz');if(n)n.textContent=free.length;if(l)l.textContent=holes.length}
+function loop(){cx.clearRect(0,0,W,H);t++;
+ if(tab<2){schrittKristall();zeichneKristall()}else{schrittPN();zeichnePN()}
+ if(t%10===0)zaehler();requestAnimationFrame(loop)}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('akt'));b.classList.add('akt');tab=+b.dataset.t;st.U=false;reset();pnReset();panel()});
+reset();pnReset();panel();loop();
+</script>
+</body>
+</html>
